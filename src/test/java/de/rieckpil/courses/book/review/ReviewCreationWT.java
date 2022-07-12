@@ -1,20 +1,38 @@
 package de.rieckpil.courses.book.review;
 
+import java.io.File;
+import java.util.logging.Level;
+
+import com.codeborne.selenide.CollectionCondition;
+import com.codeborne.selenide.Condition;
+import com.codeborne.selenide.Configuration;
+import com.codeborne.selenide.WebDriverRunner;
 import java.util.logging.Level;
 
 import de.rieckpil.courses.AbstractWebTest;
 import de.rieckpil.courses.book.management.Book;
 import de.rieckpil.courses.book.management.BookRepository;
+import org.apache.commons.lang3.SystemUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.logging.LoggingPreferences;
+import org.openqa.selenium.remote.RemoteWebDriver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.utility.DockerImageName;
 
-@DisabledIfSystemProperty(named = "os.arch", matches = "aarch64", disabledReason = "Selenium Docker image doesn't support ARM64 (yet), see Selenium Docker image doesn't support ARM64 (yet), see https://github.com/rieckpil/testing-spring-boot-applications-masterclass/issues/31")
+import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.Selenide.$$;
+import static com.codeborne.selenide.Selenide.open;
+import static com.codeborne.selenide.Selenide.screenshot;
+import static com.codeborne.selenide.WebDriverRunner.getWebDriver;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 class ReviewCreationWT extends AbstractWebTest {
 
   @Autowired
@@ -38,10 +56,39 @@ class ReviewCreationWT extends AbstractWebTest {
   }
 
   @Container
-  static BrowserWebDriverContainer<?> webDriverContainer = new BrowserWebDriverContainer<>()
+  static BrowserWebDriverContainer<?> webDriverContainer = new BrowserWebDriverContainer<>(
+    // Workaround to allow running the tests on an Apple M1
+    System.getProperty("os.arch").equals("aarch64") ?
+      DockerImageName.parse("seleniarm/standalone-chromium")
+        .asCompatibleSubstituteFor("selenium/standalone-chrome")
+      : DockerImageName.parse("selenium/standalone-chrome")
+  )
+    .withRecordingMode(BrowserWebDriverContainer.VncRecordingMode.RECORD_ALL, new File("./target"))
     .withCapabilities(CHROME_OPTIONS);
 
   private static final String ISBN = "9780321751041";
+
+  @BeforeEach
+  public void setup() {
+    Configuration.timeout = 2000;
+    // TODO: Improve platform independence, see Testcontainers.exposeHostPorts https://rieckpil.de/write-concise-web-tests-with-selenide-for-java-projects/
+    Configuration.baseUrl = SystemUtils.IS_OS_LINUX ? "http://172.17.0.1:8080" : "http://host.docker.internal:8080";
+
+    RemoteWebDriver remoteWebDriver = webDriverContainer.getWebDriver();
+    WebDriverRunner.setWebDriver(remoteWebDriver);
+
+    createBook();
+  }
+
+  @AfterEach
+  public void tearDown() {
+    this.reviewRepository.deleteAll();
+    this.bookRepository.deleteAll();
+
+    for (LogEntry logEntry : getWebDriver().manage().logs().get(LogType.BROWSER)) {
+      LOG.info(logEntry.getMessage());
+    }
+  }
 
   @Test
   void shouldCreateReviewAndDisplayItInReviewList() {

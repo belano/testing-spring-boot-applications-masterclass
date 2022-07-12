@@ -47,11 +47,7 @@ public abstract class AbstractWebTest {
     .to("target/selenide-screenshots");
 
   static {
-    if (System.getProperty("os.arch").equals("aarch64")) {
-      LOG.warn("Not starting the Docker Compose environment as the web tests will fail due to missing ARM64 support for the Selenium images. See https://github.com/rieckpil/testing-spring-boot-applications-masterclass/issues/31 for more information.");
-    } else {
-      environment.start();
-    }
+    environment.start();
   }
 
   @TestConfiguration
