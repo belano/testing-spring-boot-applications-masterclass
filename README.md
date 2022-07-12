@@ -2,11 +2,13 @@
 
 # About the Masterclass
 
-[![Build & Test Maven Project](https://github.com/rieckpil/testing-spring-boot-applications-masterclass/workflows/Build%20&%20Test%20Maven%20Project/badge.svg)](https://github.com/rieckpil/testing-spring-boot-applications-masterclass/actions)
-[![](https://img.shields.io/badge/Spring%20Boot%20Version-2.6.2-orange)](/pom.xml)
+[![](https://img.shields.io/badge/Spring%20Boot%20Version-2.7.0-orange)](/pom.xml)
 [![](https://img.shields.io/badge/Java%20Version-17-orange)](/pom.xml)
 [![](https://img.shields.io/badge/Enroll-Now-orange)](https://rieckpil.de/testing-spring-boot-applications-masterclass/)
 
+`master` branch: [![Build & Test Maven Project (master)](https://github.com/rieckpil/testing-spring-boot-applications-masterclass/workflows/Build%20&%20Test%20Maven%20Project/badge.svg)](https://github.com/rieckpil/testing-spring-boot-applications-masterclass/actions/workflows/maven.yml?query=branch%3Amaster)
+
+`code-along` branch: [![Build & Test Maven Project (code-along)](https://github.com/rieckpil/testing-spring-boot-applications-masterclass/workflows/Build%20&%20Test%20Maven%20Project/badge.svg?branch=code-along)](https://github.com/rieckpil/testing-spring-boot-applications-masterclass/actions/workflows/maven.yml?query=branch%3Acode-along)
 
 ## Introduction
 
@@ -144,8 +146,6 @@ OS name: "linux", version: "5.4.0-92-generic", arch: "amd64", family: "unix"
 
 ## Running the Project Locally
 
-*When trying to run the application and the tests on an ARM64 processor, there's a [small tweak](https://github.com/rieckpil/testing-spring-boot-applications-masterclass/issues/31) required.*
-
 Assuming your local setups meets all requirements as stated above, you can now start the application:
 
 1. Make sure your Docker Engine is up- and running
@@ -207,7 +207,7 @@ version: '3.8'
 services:
   # ...
   keycloak:
-    image: jboss/keycloak:16.1.0
+    image: quay.io/keycloak/keycloak:18.0.0-legacy
     environment:
       - KEYCLOAK_USER=keycloak
       - KEYCLOAK_PASSWORD=keycloak
